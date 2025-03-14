@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-800 to-blue-800">
+    <!-- Header/Navbar -->
+    <header class="fixed top-0 left-0 right-0 bg-gradient-to-r from-indigo-900 to-purple-700 text-white p-4 shadow-lg z-40">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- Logo or Dashboard Title -->
+            <div class="flex items-center space-x-4">
+                <button class="md:hidden text-white focus:outline-none" onclick="toggleSidebar()">
+                    ☰
+                </button>
+                <h1 class="text-2xl font-extrabold">Insurance Dashboard</h1>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex space-x-6 text-white">
+                <a href="/clients" class="hover:text-purple-300 transition duration-200">Clients</a>
+                <a href="/policies" class="hover:text-purple-300 transition duration-200">Policies</a>
+                <a href="/claims" class="hover:text-purple-300 transition duration-200">Claims</a>
+                <a href="/payments" class="hover:text-purple-300 transition duration-200">Payments</a>
+                <a href="/agents" class="hover:text-purple-300 transition duration-200">Agents</a>
+                <a href="/underwriters" class="hover:text-purple-300 transition duration-200">Underwriters</a>
+                <a href="/accidents" class="hover:text-purple-300 transition duration-200">Accidents</a>
+                <a href="/beneficiaries" class="hover:text-purple-300 transition duration-200">Beneficiaries</a>
+            </nav>
+
+                           
+            </div>
+        </div>
+    </header>
+
+    <div class="flex h-screen pt-16"> <!-- Added pt-16 to account for the fixed header -->
+        <!-- Sidebar -->
+        <div class="w-64 bg-gradient-to-r from-indigo-900 to-purple-700 text-white flex flex-col p-4 transition-transform transform md:translate-x-0 -translate-x-full md:block fixed md:relative z-50" id="sidebar">
+            <div class="flex items-center justify-between mb-6">
+                <h4 class="text-2xl font-extrabold">Insurance Dashboard</h4>
+                <button class="md:hidden text-white focus:outline-none" onclick="toggleSidebar()">
+                    ☰
+                </button>
+            </div>
+            <hr class="mb-4 border-purple-300">
+            <ul class="space-y-4">
+                <li><a href="/clients" class="block px-4 py-3 rounded-lg hover:bg-purple-500 transition duration-200">Clients</a></li>
+                <li><a href="/policies" class="block px-4 py-3 rounded-lg hover:bg-purple-500 transition duration-200">Policies</a></li>
+                <li><a href="/claims" class="block px-4 py-3 rounded-lg hover:bg-purple-500 transition duration-200">Claims</a></li>
+                <li><a href="/payments" class="block px-4 py-3 rounded-lg hover:bg-purple-500 transition duration-200">Payments</a></li>
+                <li><a href="/agents" class="block px-4 py-3 rounded-lg hover:bg-purple-500 transition duration-200">Agents</a></li>
+                <li><a href="/underwriters" class="block px-4 py-3 rounded-lg hover:bg-purple-500 transition duration-200">Underwriters</a></li>
+                <li><a href="/accidents" class="block px-4 py-3 rounded-lg hover:bg-purple-500 transition duration-200">Accidents</a></li>
+                <li><a href="/beneficiaries" class="block px-4 py-3 rounded-lg hover:bg-purple-500 transition duration-200">Beneficiaries</a></li>
+            </ul>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 p-6 bg-gray-100 overflow-auto text-gray-800"> <!-- Added text-gray-800 for better contrast -->
+            {% block content %}
+            <!-- Your index page specific content here -->
+            <div class="container">
+                <h1 class="text-3xl font-bold mb-4">Welcome to Insurance Dashboard</h1>
+                <!-- Add your dashboard content here -->
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+
+        // Toggle dropdown menu
+        const profileButton = document.querySelector('.relative button');
+        const dropdownMenu = document.querySelector('.relative .hidden');
+
+        profileButton.addEventListener('click', () => {
+            dropdownMenu.classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!profileButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                dropdownMenu.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

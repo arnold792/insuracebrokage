@@ -1,0 +1,143 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-gray-800">📜 Policies</h2>
+        <button onclick="openAddModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+            ➕ Add Policy
+        </button>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full table-auto border border-gray-200 rounded-lg">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left text-gray-600">ID</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Policy Number</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Type</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Premium (Ksh)</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200" id="policies-table">
+                {% for policy in policies %}
+                <tr id="policy-{{ policy.id }}" class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-3 text-gray-700">{{ policy.id }}</td>
+                    <td class="px-6 py-3 text-gray-700 font-medium">{{ policy.policy_number }}</td>
+                    <td class="px-6 py-3 text-gray-700">{{ policy.type }}</td>
+                    <td class="px-6 py-3 text-gray-700 font-medium">Ksh {{ policy.premium }}</td>
+                    <td class="px-6 py-3">
+                        <button onclick="openEditModal('{{ policy.id }}', '{{ policy.policy_number }}', '{{ policy.type }}', '{{ policy.premium }}')"
+                            class="text-blue-500 hover:text-blue-700 mr-3">
+                            ✏️ Edit
+                        </button>
+                        <button onclick="deletePolicy('{{ policy.id }}')" class="text-red-500 hover:text-red-700">
+                            🗑️ Delete
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">No policies found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="policy-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-4">Add Policy</h3>
+        <form id="policy-form" onsubmit="handleFormSubmit(event)">
+            <input type="hidden" id="policy-id">
+            <div class="mb-4">
+                <label for="policy_number" class="block text-gray-700">Policy Number</label>
+                <input type="text" id="policy_number" name="policy_number" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="type" class="block text-gray-700">Type</label>
+                <input type="text" id="type" name="type" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="premium" class="block text-gray-700">Premium (Ksh)</label>
+                <input type="number" id="premium" name="premium" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                    Cancel
+                </button>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Open Add Modal
+    function openAddModal() {
+        document.getElementById('modal-title').textContent = 'Add Policy';
+        document.getElementById('policy-form').reset();
+        document.getElementById('policy-id').value = '';
+        document.getElementById('policy-modal').classList.remove('hidden');
+    }
+
+    // Open Edit Modal
+    function openEditModal(id, policy_number, type, premium) {
+        document.getElementById('modal-title').textContent = 'Edit Policy';
+        document.getElementById('policy-id').value = id;
+        document.getElementById('policy_number').value = policy_number;
+        document.getElementById('type').value = type;
+        document.getElementById('premium').value = premium;
+        document.getElementById('policy-modal').classList.remove('hidden');
+    }
+
+    // Close Modal
+    function closeModal() {
+        document.getElementById('policy-modal').classList.add('hidden');
+    }
+
+    // Handle Form Submission (Add/Edit)
+    function handleFormSubmit(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const policyId = formData.get('policy-id');
+        const url = policyId ? `/update_policy/${policyId}` : '/add_policy';
+        const method = policyId ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
+            body: JSON.stringify(Object.fromEntries(formData)),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Reload the page to reflect changes
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Delete Policy
+    function deletePolicy(id) {
+        if (confirm('Are you sure you want to delete this policy?')) {
+            fetch(`/delete_policy/${id}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`policy-${id}`).remove(); // Remove the row from the table
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    }
+</script>
+{% endblock %}

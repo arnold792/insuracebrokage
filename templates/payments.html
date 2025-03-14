@@ -1,0 +1,171 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-gray-800">💳 Payments List</h2>
+        <button onclick="openAddModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+            ➕ Add Payment
+        </button>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full table-auto border border-gray-200 rounded-lg">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left text-gray-600">Payment ID</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Amount</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Payment Date</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Method</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Status</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200" id="payments-table">
+                {% for payment in payments %}
+                <tr id="payment-{{ payment.id }}" class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-3 text-gray-700">{{ payment.id }}</td>
+                    <td class="px-6 py-3 text-gray-700 font-medium">${{ payment.amount }}</td>
+                    <td class="px-6 py-3 text-gray-700">{{ payment.payment_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="px-6 py-3 text-gray-700">{{ payment.payment_method }}</td>
+                    <td class="px-6 py-3 text-gray-700">{{ payment.status }}</td>
+                    <td class="px-6 py-3">
+                        <button onclick="openEditModal('{{ payment.id }}', '{{ payment.amount }}', '{{ payment.payment_date.strftime('%Y-%m-%dT%H:%M') }}', '{{ payment.payment_method }}', '{{ payment.status }}')"
+                            class="text-blue-500 hover:text-blue-700 mr-3">
+                            ✏️ Edit
+                        </button>
+                        <button onclick="deletePayment('{{ payment.id }}')" class="text-red-500 hover:text-red-700">
+                            🗑️ Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="payment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-4">Add Payment</h3>
+        <form id="payment-form" onsubmit="handleFormSubmit(event)">
+            <input type="hidden" id="payment-id">
+            <div class="mb-4">
+                <label for="client_id" class="block text-gray-700">Client</label>
+                <select id="client_id" name="client_id" class="w-full px-4 py-2 border rounded-lg" required>
+                    {% for client in clients %}
+                    <option value="{{ client.id }}">{{ client.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="amount" class="block text-gray-700">Amount</label>
+                <input type="number" id="amount" name="amount" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="payment_date" class="block text-gray-700">Payment Date</label>
+                <input type="datetime-local" id="payment_date" name="payment_date" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="payment_method" class="block text-gray-700">Payment Method</label>
+                <select id="payment_method" name="payment_method" class="w-full px-4 py-2 border rounded-lg" required>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="PayPal">PayPal</option>
+                    <option value="Cash">Cash</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="status" class="block text-gray-700">Status</label>
+                <select id="status" name="status" class="w-full px-4 py-2 border rounded-lg" required>
+                    <option value="Completed">Completed</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Failed">Failed</option>
+                </select>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                    Cancel
+                </button>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Open Add Modal
+    function openAddModal() {
+        document.getElementById('modal-title').textContent = 'Add Payment';
+        document.getElementById('payment-form').reset();
+        document.getElementById('payment-id').value = '';
+        document.getElementById('payment-modal').classList.remove('hidden');
+    }
+
+    // Open Edit Modal
+    function openEditModal(id, amount, payment_date, payment_method, status) {
+        document.getElementById('modal-title').textContent = 'Edit Payment';
+        document.getElementById('payment-id').value = id;
+        document.getElementById('amount').value = amount;
+        document.getElementById('payment_date').value = payment_date;
+        document.getElementById('payment_method').value = payment_method;
+        document.getElementById('status').value = status;
+        document.getElementById('payment-modal').classList.remove('hidden');
+    }
+
+    // Close Modal
+    function closeModal() {
+        document.getElementById('payment-modal').classList.add('hidden');
+    }
+
+    // Handle Form Submission (Add/Edit)
+    function handleFormSubmit(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const paymentId = document.getElementById('payment-id').value;
+        const data = {
+            client_id: formData.get('client_id'),
+            amount: formData.get('amount'),
+            payment_date: formData.get('payment_date'),
+            payment_method: formData.get('payment_method'),
+            status: formData.get('status')
+        };
+
+        const url = paymentId ? `/payments/${paymentId}` : '/add_payment';
+        const method = paymentId ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Reload the page to reflect changes
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Delete Payment
+    function deletePayment(id) {
+        if (confirm('Are you sure you want to delete this payment?')) {
+            fetch(`/delete_payment/${id}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`payment-${id}`).remove(); // Remove the row from the table
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    }
+</script>
+{% endblock %}

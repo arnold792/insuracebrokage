@@ -1,0 +1,104 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">👤 Beneficiaries Overview</h2>
+    <div class="flex justify-end mb-4">
+        <button onclick="openAddModal()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+            + Add New Beneficiary
+        </button>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full table-auto border border-gray-200 rounded-lg">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left text-gray-600">ID</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Name</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Relationship</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Percentage</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Contact</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200" id="beneficiaries-table">
+                {% for beneficiary in beneficiaries %}
+                <tr id="beneficiary-{{ beneficiary.id }}" class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-3 text-gray-700">{{ beneficiary.id }}</td>
+                    <td class="px-6 py-3 text-gray-700 font-medium">{{ beneficiary.name }}</td>
+                    <td class="px-6 py-3 text-gray-700">{{ beneficiary.relationship }}</td>
+                    <td class="px-6 py-3 text-gray-700">{{ beneficiary.percentage }}%</td>
+                    <td class="px-6 py-3 text-gray-700">{{ beneficiary.contact_info }}</td>
+                    <td class="px-6 py-3">
+                        <button onclick="openEditModal('{{ beneficiary.id }}', '{{ beneficiary.name }}', '{{ beneficiary.relationship }}', '{{ beneficiary.percentage }}', '{{ beneficiary.contact_info }}')"
+                            class="text-blue-500 hover:text-blue-700 mr-3">✏️ Edit</button>
+                        <form method="POST" action="{{ url_for('delete_beneficiary', beneficiary_id=beneficiary.id) }}" class="inline">
+                            <button type="submit" class="text-red-500 hover:text-red-700">🗑️ Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="beneficiary-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-4">Add Beneficiary</h3>
+        <form id="beneficiary-form" method="POST" action="{{ url_for('add_edit_beneficiary') }}">
+            <input type="hidden" id="beneficiary-id" name="id">
+            <input type="hidden" id="policy_id" name="policy_id" value="1">
+            <input type="hidden" id="client_id" name="client_id" value="1">
+            <input type="hidden" id="beneficiary_id" name="beneficiary_id" value="1">
+            <div class="mb-4">
+                <label for="name" class="block text-gray-700">Name</label>
+                <input type="text" id="name" name="name" placeholder="Enter beneficiary name" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="relationship" class="block text-gray-700">Relationship</label>
+                <input type="text" id="relationship" name="relationship" placeholder="Enter relationship" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="percentage" class="block text-gray-700">Percentage</label>
+                <input type="number" id="percentage" name="percentage" placeholder="Enter percentage" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="contact" class="block text-gray-700">Contact</label>
+                <input type="text" id="contact" name="contact_info" placeholder="Enter contact information" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                    Cancel
+                </button>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openAddModal() {
+        document.getElementById('modal-title').textContent = 'Add Beneficiary';
+        document.getElementById('beneficiary-form').reset();
+        document.getElementById('beneficiary-id').value = '';
+        document.getElementById('beneficiary-modal').classList.remove('hidden');
+    }
+
+    function openEditModal(id, name, relationship, percentage, contact) {
+        document.getElementById('modal-title').textContent = 'Edit Beneficiary';
+        document.getElementById('beneficiary-id').value = id;
+        document.getElementById('name').value = name;
+        document.getElementById('relationship').value = relationship;
+        document.getElementById('percentage').value = percentage;
+        document.getElementById('contact').value = contact;
+        document.getElementById('beneficiary-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('beneficiary-modal').classList.add('hidden');
+    }
+</script>
+{% endblock %}

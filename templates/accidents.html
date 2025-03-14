@@ -1,0 +1,169 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-gray-800">🚨 Accident List</h2>
+        <button onclick="openAddAccidentModal()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+            ➕ Report Accident
+        </button>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full table-auto border border-gray-200 rounded-lg">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left text-gray-600">Accident ID</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Location</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Date</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Severity</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Actions</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Description</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Damage Amount</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200" id="accidents-table">
+                {% for accident in accidents %}
+                <tr id="accident-{{ accident.id }}" class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-3 text-gray-700">{{ accident.id }}</td>
+                    <td class="px-6 py-3 text-gray-700 font-medium">{{ accident.location }}</td>
+                    <td class="px-6 py-3 text-gray-700">{{ accident.date.strftime('%Y-%m-%d') }}</td>
+                    <td class="px-6 py-3 text-gray-700">{{ accident.severity }}</td>
+
+                    <td class="px-6 py-3">
+                        <button onclick="openEditAccidentModal('{{ accident.id }}', '{{ accident.location }}', '{{ accident.date.strftime('%Y-%m-%d') }}', '{{ accident.severity }}')"
+                            class="text-blue-500 hover:text-blue-700 mr-3">
+                            ✏️ Edit
+                        </button>
+                        <button onclick="deleteAccident('{{ accident.id }}')" class="text-red-500 hover:text-red-700">
+                            🗑️ Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Accident Modal -->
+<div id="accident-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <h3 id="accident-modal-title" class="text-xl font-bold text-gray-800 mb-4">Report Accident</h3>
+        <form id="accident-form" onsubmit="handleAccidentFormSubmit(event)">
+            <div class="mb-4">
+                <label for="description" class="block text-gray-700">Description</label>
+                <textarea id="description" name="description" placeholder="Enter accident description" class="w-full px-4 py-2 border rounded-lg" required></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="damage_amount" class="block text-gray-700">Damage Amount</label>
+                <input type="number" id="damage_amount" name="damage_amount" placeholder="Enter damage amount" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="client_id" class="block text-gray-700">Client ID</label>
+                <input type="number" id="client_id" name="client_id" placeholder="Enter client ID" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <input type="hidden" id="accident-id">
+            <div class="mb-4">
+                <label for="location" class="block text-gray-700">Location</label>
+                <input type="text" id="location" name="location" placeholder="Enter accident location" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="date" class="block text-gray-700">Date</label>
+                <input type="date" id="date" name="date" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="severity" class="block text-gray-700">Severity</label>
+                <select id="severity" name="severity" class="w-full px-4 py-2 border rounded-lg" required>
+                    <option value="" disabled selected>Select severity</option>
+                    <option value="Minor">Minor</option>
+                    <option value="Moderate">Moderate</option>
+                    <option value="Severe">Severe</option>
+                </select>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeAccidentModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                    Cancel
+                </button>
+                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Open Add Accident Modal
+    function openAddAccidentModal() {
+        document.getElementById('accident-modal-title').textContent = 'Report Accident';
+        document.getElementById('accident-form').reset();
+        document.getElementById('accident-id').value = '';
+        document.getElementById('accident-modal').classList.remove('hidden');
+    }
+
+    // Open Edit Accident Modal
+    function openEditAccidentModal(id, location, date, description, damage_amount, client_id, severity) {
+        document.getElementById('accident-modal-title').textContent = 'Edit Accident';
+        document.getElementById('accident-id').value = id;
+        document.getElementById('location').value = location;
+        document.getElementById('date').value = date;
+        document.getElementById('description').value = description;
+        document.getElementById('damage_amount').value = damage_amount;
+        document.getElementById('client_id').value = client_id;
+        document.getElementById('severity').value = severity;
+        document.getElementById('accident-modal').classList.remove('hidden');
+    }
+
+    // Close Accident Modal
+    function closeAccidentModal() {
+        document.getElementById('accident-modal').classList.add('hidden');
+    }
+
+    function handleAccidentFormSubmit(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const accidentId = formData.get('accident-id');
+        const url = accidentId ? `/update_accident/${accidentId}` : '/add_accident';
+        const method = accidentId ? 'PUT' : 'POST';
+    
+        const data = {
+            location: formData.get('location'),
+            date: formData.get('date'),
+            description: formData.get('description'),
+            damage_amount: parseFloat(formData.get('damage_amount')),
+            client_id: parseInt(formData.get('client_id')),
+            severity: formData.get('severity')
+        };
+    
+        fetch(url, {
+            method: method,
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Reload the page to reflect changes
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    // Delete Accident
+    function deleteAccident(id) {
+        if (confirm('Are you sure you want to delete this accident?')) {
+            fetch(`/delete_accident/${id}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`accident-${id}`).remove(); // Remove the row from the table
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    }
+</script>
+{% endblock %}

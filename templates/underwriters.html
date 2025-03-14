@@ -1,0 +1,149 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">📋 Underwriters List</h2>
+    <div class="flex justify-end mb-4">
+        <button onclick="openAddModal()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+            + Add Underwriter
+        </button>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full table-auto border border-gray-200 rounded-lg">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left text-gray-600">Underwriter ID</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Name</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Department</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Email</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Cases Handled</th>
+                    <th class="px-6 py-3 text-left text-gray-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200" id="underwriters-table">
+                {% for underwriter in underwriters %}
+                <tr id="underwriter-{{ underwriter.id }}" class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-3 text-gray-700">{{ underwriter.id }}</td>
+                    <td class="px-6 py-3 text-gray-700 font-medium">{{ underwriter.name }}</td>
+                    <td class="px-6 py-3 text-gray-700">{{ underwriter.department }}</td>
+                    <td class="px-6 py-3 text-gray-700">
+                        <a href="mailto:{{ underwriter.email }}" class="text-indigo-500 hover:text-indigo-700 underline">
+                            {{ underwriter.email }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-3 text-gray-700 font-bold">{{ underwriter.cases_handled }}</td>
+                    <td class="px-6 py-3">
+                        <button onclick="openEditModal('{{ underwriter.id }}', '{{ underwriter.name }}', '{{ underwriter.department }}', '{{ underwriter.email }}', '{{ underwriter.cases_handled }}')"
+                            class="text-blue-500 hover:text-blue-700 mr-3">
+                            ✏️ Edit
+                        </button>
+                        <button onclick="deleteUnderwriter('{{ underwriter.id }}')" class="text-red-500 hover:text-red-700">
+                            🗑️ Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="underwriter-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-4">Add Underwriter</h3>
+        <form id="underwriter-form" onsubmit="handleFormSubmit(event)">
+            <input type="hidden" id="underwriter-id">
+            <div class="mb-4">
+                <label for="name" class="block text-gray-700">Name</label>
+                <input type="text" id="name" name="name" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="department" class="block text-gray-700">Department</label>
+                <input type="text" id="department" name="department" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700">Email</label>
+                <input type="email" id="email" name="email" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="cases_handled" class="block text-gray-700">Cases Handled</label>
+                <input type="number" id="cases_handled" name="cases_handled" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                    Cancel
+                </button>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    // Open Add Modal
+    function openAddModal() {
+        document.getElementById('modal-title').textContent = 'Add Underwriter';
+        document.getElementById('underwriter-form').reset();
+        document.getElementById('underwriter-id').value = '';
+        document.getElementById('underwriter-modal').classList.remove('hidden');
+    }
+
+    // Open Edit Modal
+    function openEditModal(id, name, department, email, cases_handled) {
+        document.getElementById('modal-title').textContent = 'Edit Underwriter';
+        document.getElementById('underwriter-id').value = id;
+        document.getElementById('name').value = name;
+        document.getElementById('department').value = department;
+        document.getElementById('email').value = email;
+        document.getElementById('cases_handled').value = cases_handled;
+        document.getElementById('underwriter-modal').classList.remove('hidden');
+    }
+
+    // Close Modal
+    function closeModal() {
+        document.getElementById('underwriter-modal').classList.add('hidden');
+    }
+
+    // Handle Form Submission (Add/Edit)
+    function handleFormSubmit(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const underwriterId = formData.get('underwriter-id');
+        const url = underwriterId ? `/update_underwriter/${underwriterId}` : '/add_underwriter';
+        const method = underwriterId ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
+            body: JSON.stringify(Object.fromEntries(formData)),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Reload the page to reflect changes
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Delete Underwriter
+    function deleteUnderwriter(id) {
+        if (confirm('Are you sure you want to delete this underwriter?')) {
+            fetch(`/delete_underwriter/${id}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`underwriter-${id}`).remove(); // Remove the row from the table
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    }
+</script>
+{% endblock %}
