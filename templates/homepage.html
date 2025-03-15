@@ -1,0 +1,86 @@
+{% extends "index.html" %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="relative text-center py-32 bg-gradient-to-r from-green-500 to-blue-500 text-white">
+        <div class="absolute inset-0 bg-black opacity-40"></div>
+        <div class="relative z-10 animate-fadeIn">
+            <h2 class="text-6xl font-extrabold mb-4 drop-shadow-lg">Secure Your Future with Us</h2>
+            <p class="text-lg mb-6 max-w-xl mx-auto">Simplifying insurance management for you.</p>
+            <button class="bg-white hover:bg-gray-200 text-green-500 font-bold px-8 py-4 rounded-lg text-lg shadow-lg transition-transform transform hover:scale-105">Explore Now</button>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="bg-white text-gray-800 p-8">
+        <h3 class="text-4xl font-bold text-center mb-6">About Us</h3>
+        <div class="flex flex-col md:flex-row items-center max-w-5xl mx-auto">
+            <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&h=300&q=80" alt="About Us Image" class="rounded-lg shadow-lg mb-4 md:mb-0 md:mr-6">
+            <p class="text-center md:text-left max-w-lg">We provide an integrated platform to manage clients, policies, claims, and more with ease. Our intuitive interface ensures you get what you need — fast and hassle-free.</p>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="bg-gray-100 p-8">
+        <h3 class="text-4xl font-bold text-center mb-6">Why Choose Us?</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-6 bg-white rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                <img src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80" alt="Trust" class="mx-auto mb-4 rounded-full">
+                <h4 class="text-xl font-bold mb-2">Trustworthy</h4>
+                <p>We value transparency and trust with our clients.</p>
+            </div>
+            <div class="p-6 bg-white rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80" alt="Security" class="mx-auto mb-4 rounded-full">
+                <h4 class="text-xl font-bold mb-2">Secure</h4>
+                <p>Your data is safeguarded with top-notch security protocols.</p>
+            </div>
+            <div class="p-6 bg-white rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                <img src="https://images.unsplash.com/photo-1596524430615-b46475ddff6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80" alt="Support" class="mx-auto mb-4 rounded-full">
+                <h4 class="text-xl font-bold mb-2">24/7 Support</h4>
+                <p>We’re here for you anytime, anywhere.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="p-8">
+        <h3 class="text-4xl font-bold text-center mb-6">Our Services</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                <img src="https://images.unsplash.com/photo-1616400619173-2b22c1c9fbbf?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&h=150&q=80" alt="Claims Processing" class="mx-auto mb-4 rounded-lg">
+                <h4 class="text-xl font-bold mb-2">Claims Processing</h4>
+                <p>Seamless claims management at your fingertips.</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                <img src="https://images.unsplash.com/photo-1556741533-411cf82e4e2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&h=150&q=80" alt="Policy Management" class="mx-auto mb-4 rounded-lg">
+                <h4 class="text-xl font-bold mb-2">Policy Management</h4>
+                <p>Keep track of all policies efficiently.</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                <img src="https://images.unsplash.com/photo-1538688525198-9c937956f663?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&h=150&q=80" alt="Client Support" class="mx-auto mb-4 rounded-lg">
+                <h4 class="text-xl font-bold mb-2">Client Support</h4>
+                <p>24/7 support to assist you anytime.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="bg-blue-100 text-gray-800 p-8">
+        <h3 class="text-4xl font-bold text-center mb-6">What Our Clients Say</h3>
+        <div class="max-w-2xl mx-auto text-center">
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80" alt="Client Image" class="rounded-full mx-auto mb-4">
+            <p class="italic">"The best insurance platform I've ever used!" - Jane Doe</p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="p-8 bg-gradient-to-r from-green-400 to-blue-400 text-white">
+        <h3 class="text-4xl font-bold text-center mb-6">Contact Us</h3>
+        <p class="text-center max-w-2xl mx-auto">Have questions? Reach out to us at <a href="mailto:support@insurancedashboard.com" class="underline">support@insurancedashboard.com</a></p>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white text-center py-4">
+        <p>&copy; 2025 Insurance Dashboard. All rights reserved.</p>
+    </footer>
+{% endblock %}

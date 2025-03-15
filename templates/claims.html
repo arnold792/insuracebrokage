@@ -16,8 +16,7 @@
                     <th class="px-6 py-3 text-left text-gray-600">Amount</th>
                     <th class="px-6 py-3 text-left text-gray-600">Status</th>
                     <th class="px-6 py-3 text-left text-gray-600">Description</th>
-                    <th class="px-6 py-3 text-left text-gray-600">status</th>
-
+                    <th class="px-6 py-3 text-left text-gray-600">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200" id="claims-table">
@@ -121,7 +120,7 @@
         event.preventDefault();
         const formData = new FormData(event.target);
         const claimId = formData.get('claim-id');
-        const url = claimId ? `/update_claim/${claimId}` : '/add_claim';
+        const url = claimId ? `/claims/${claimId}` : '/claims';
         const method = claimId ? 'PUT' : 'POST';
     
         try {
@@ -147,7 +146,7 @@
     async function deleteClaim(id) {
         if (confirm('Are you sure you want to delete this claim?')) {
             try {
-                const response = await fetch(`/delete_claim/${id}`, {
+                const response = await fetch(`/claims/${id}`, {
                     method: 'DELETE',
                 });
                 const data = await response.json();

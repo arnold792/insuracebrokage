@@ -12,11 +12,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 migrate = Migrate(app, db)
-
+@app.route('/')
+def homepage():
+    return render_template('homepage.html')
 @app.route('/')
 def index():
-    clients = Client.query.all()
-    return render_template('index.html', clients=clients)
+    """Route for the homepage"""
+    clients = Client.query.order_by(Client.created_at.desc()).all()
+    return render_template('homepage.html', clients=clients)
 
 @app.route('/clients')
 def clients():
@@ -78,41 +81,78 @@ def policies():
 
 @app.route('/add_policy', methods=['POST'])
 def add_policy():
-    policy = Policy(
-        policy_number=request.form['policy_number'],
-        type=request.form['type'],
-        premium=float(request.form['premium']),
-        client_id=int(request.form['client_id']),
-        coverage_amount=float(request.form['coverage_amount']),
-        start_date=datetime.strptime(request.form['start_date'], '%Y-%m-%d'),
-        end_date=datetime.strptime(request.form['end_date'], '%Y-%m-%d'),
-        underwriter_id=int(request.form['underwriter_id'])
-    )
-    db.session.add(policy)
-    db.session.commit()
-    flash('Policy added successfully!', 'success')
-    return redirect(url_for('policies'))
+    try:
+        data = request.get_json()
 
-@app.route('/policy/edit/<int:id>', methods=['GET', 'POST'])
-def edit_policy(id):
-    policy = Policy.query.get_or_404(id)
-    if request.method == 'POST':
-        policy.premium = float(request.form['premium'])
-        policy.coverage_amount = float(request.form['coverage_amount'])
-        policy.status = request.form['status']
+        # Validate required fields
+        required_fields = [
+            'policy_number', 'type', 'premium', 'client_id',
+            'coverage_amount', 'start_date', 'end_date', 'status'
+        ]
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'message': f'Missing required field: {field}'}), 400
+
+        # Create new policy
+        policy = Policy(
+            policy_number=data['policy_number'],
+            type=data['type'],
+            premium=float(data['premium']),
+            client_id=int(data['client_id']),
+            coverage_amount=float(data['coverage_amount']),
+            start_date=datetime.strptime(data['start_date'], '%Y-%m-%d'),
+            end_date=datetime.strptime(data['end_date'], '%Y-%m-%d'),
+            status=data['status'],
+            underwriter_id=int(data.get('underwriter_id', 0))  # Optional field
+        )
+        db.session.add(policy)
         db.session.commit()
-        flash('Policy updated successfully!', 'success')
-        return redirect(url_for('policies'))
-    return render_template('edit_policy.html', policy=policy)
+        return jsonify({'success': True, 'message': 'Policy added successfully!'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 400
 
-@app.route('/policy/delete/<int:id>')
+@app.route('/policy/edit/<int:id>', methods=['POST'])
+def edit_policy(id):
+    try:
+        policy = Policy.query.get_or_404(id)
+        data = request.get_json()
+
+        # Update policy fields
+        if 'policy_number' in data:
+            policy.policy_number = data['policy_number']
+        if 'type' in data:
+            policy.type = data['type']
+        if 'premium' in data:
+            policy.premium = float(data['premium'])
+        if 'coverage_amount' in data:
+            policy.coverage_amount = float(data['coverage_amount'])
+        if 'start_date' in data:
+            policy.start_date = datetime.strptime(data['start_date'], '%Y-%m-%d')
+        if 'end_date' in data:
+            policy.end_date = datetime.strptime(data['end_date'], '%Y-%m-%d')
+        if 'status' in data:
+            policy.status = data['status']
+        if 'client_id' in data:
+            policy.client_id = int(data['client_id'])
+        if 'underwriter_id' in data:
+            policy.underwriter_id = int(data['underwriter_id'])
+
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Policy updated successfully!'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 400
+@app.route('/policy/delete/<int:id>', methods=['DELETE'])
 def delete_policy(id):
-    policy = Policy.query.get_or_404(id)
-    db.session.delete(policy)
-    db.session.commit()
-    flash('Policy deleted successfully!', 'success')
-    return redirect(url_for('policies'))
-
+    try:
+        policy = Policy.query.get_or_404(id)
+        db.session.delete(policy)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Policy deleted successfully!'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 400@app.route('/claims', methods=['GET', 'POST'])
 @app.route('/claims', methods=['GET', 'POST'])
 def claims():
     if request.method == 'GET':
@@ -123,7 +163,7 @@ def claims():
     try:
         data = request.get_json()
         if not data or 'claim_amount' not in data or 'status' not in data or 'description' not in data:
-            raise BadRequest('Invalid data')
+            raise ValueError('Invalid data')
 
         claim = Claim(
             client_id=int(data.get('client_id', 0)),
@@ -138,11 +178,6 @@ def claims():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 400
-
-@app.route('/add_claim', methods=['POST'])
-def add_claim_redirect():
-    """Redirect /add_claim requests to /claims endpoint for backward compatibility"""
-    return claims()
 
 @app.route('/claims/<int:id>', methods=['PUT'])
 def update_claim(id):
@@ -168,7 +203,6 @@ def delete_claim(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 400
-    
 @app.route('/agents')
 def agents():
     agents = Agent.query.all()
@@ -260,9 +294,7 @@ def add_payment():
             return jsonify({'success': False, 'message': str(e)}), 400
         else:
             flash(f'Error adding payment: {str(e)}', 'error')
-            return redirect(url_for('payments'))
-
-@app.route('/payments/<int:id>', methods=['PUT'])
+            return redirect(url_for('payments'))@app.route('/payments/<int:id>', methods=['PUT'])
 def update_payment(id):
     try:
         payment = Payment.query.get_or_404(id)
@@ -287,7 +319,6 @@ def update_payment(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 400
-
 @app.route('/payments/<int:id>', methods=['DELETE'])
 def delete_payment(id):
     try:
@@ -304,43 +335,60 @@ def underwriters():
     underwriters = Underwriter.query.all()
     return render_template('underwriters.html', underwriters=underwriters)
 
-@app.route('/add_underwriter', methods=['GET', 'POST'])
+@app.route('/add_underwriter', methods=['POST'])
 def add_underwriter():
-    form = UnderwriterForm()
-    if form.validate_on_submit():
+    try:
+        data = request.get_json()  # Get JSON data from the request
+
+        # Validate required fields
+        required_fields = ['name', 'email']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'message': f'Missing required field: {field}'}), 400
+
+        # Create the underwriter
         underwriter = Underwriter(
-            name=form.name.data,
-            email=form.email.data,
-            specialization=form.specialization.data,
-            license_number=form.license_number.data
+            name=data['name'],
+            specialty=data.get('specialty'),  # Optional field
+            email=data['email']
         )
         db.session.add(underwriter)
         db.session.commit()
-        flash('Underwriter added successfully!', 'success')
-        return redirect(url_for('underwriters'))
-    return render_template('add_underwriter.html', form=form)
+        return jsonify({'success': True, 'message': 'Underwriter added successfully!'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 400
 
-@app.route('/underwriter/edit/<int:id>', methods=['GET', 'POST'])
-def edit_underwriter(id):
-    underwriter = Underwriter.query.get_or_404(id)
-    form = UnderwriterForm(obj=underwriter)
-    
-    if form.validate_on_submit():
-        form.populate_obj(underwriter)
+@app.route('/update_underwriter/<int:id>', methods=['PUT'])
+def update_underwriter(id):
+    try:
+        underwriter = Underwriter.query.get_or_404(id)
+        data = request.get_json()
+
+        # Update fields if provided
+        if 'name' in data:
+            underwriter.name = data['name']
+        if 'specialty' in data:
+            underwriter.specialty = data['specialty']
+        if 'email' in data:
+            underwriter.email = data['email']
+
         db.session.commit()
-        flash('Underwriter updated successfully!', 'success')
-        return redirect(url_for('underwriters'))
-    return render_template('edit_underwriter.html', form=form, underwriter=underwriter)
+        return jsonify({'success': True, 'message': 'Underwriter updated successfully!'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 400
 
-@app.route('/underwriter/delete/<int:id>')
+@app.route('/delete_underwriter/<int:id>', methods=['DELETE'])
 def delete_underwriter(id):
-    underwriter = Underwriter.query.get_or_404(id)
-    db.session.delete(underwriter)
-    db.session.commit()
-    flash('Underwriter deleted successfully!', 'success')
-    return redirect(url_for('underwriters'))
-
-@app.route('/accidents', methods=['GET', 'DELETE'])
+    try:
+        underwriter = Underwriter.query.get_or_404(id)
+        db.session.delete(underwriter)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Underwriter deleted successfully!'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 400@app.route('/accidents', methods=['GET', 'DELETE'])
 def accidents():
     if request.method == 'DELETE':
         return jsonify({'error': 'Direct DELETE on /accidents not allowed'}), 405
@@ -423,8 +471,10 @@ def delete_accident(id):
 
 @app.route('/beneficiaries')
 def beneficiaries():
-    beneficiaries = Beneficiary.query.all()
-    return render_template('beneficiaries.html', beneficiaries=beneficiaries)
+    beneficiaries = Beneficiary.query.all()  # Fetch all beneficiaries
+    clients = Client.query.all()  # Fetch all clients for the dropdown
+    policies = Policy.query.all()  # Fetch all policies for the dropdown
+    return render_template('beneficiaries.html', beneficiaries=beneficiaries, clients=clients, policies=policies)
 
 @app.route('/beneficiary', methods=['POST', 'PUT'])
 def add_edit_beneficiary():

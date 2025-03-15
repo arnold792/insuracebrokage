@@ -6,10 +6,56 @@
     <title>Insurance Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gradient-to-br from-purple-800 to-blue-800 text-white">
-    <div class="flex h-screen">
+<body class="bg-white text-gray-800">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 text-white p-6 shadow-lg z-40 border-b-4 border-blue-400">
+        <!-- Animated Gradient Background -->
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-900 to-indigo-800 animate-gradient"></div>
+        
+        <div class="container mx-auto flex justify-between items-center relative z-10">
+            <!-- Logo or Dashboard Title -->
+            <div class="flex items-center space-x-4 flex-1 justify-center">
+                <button class="md:hidden text-white focus:outline-none" onclick="toggleSidebar()">
+                    ☰
+                </button>
+                <h1 class="text-4xl font-extrabold tracking-wide text-blue-300 drop-shadow-lg">
+                    <a href="#" onclick="showHomepage(); return false;" class="hover:text-blue-200 transition duration-200 typing-animation">Insurance Brokerage</a>
+                </h1>
+            </div>
+        </div>
+    </header>
+
+    <style>
+        /* Gradient Animation */
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .animate-gradient {
+            background: linear-gradient(270deg, #1e3a8a, #4f46e5, #9333ea, #1e3a8a);
+            background-size: 400% 400%;
+            animation: gradient 10s ease infinite;
+        }
+
+        /* Typing Animation */
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        .typing-animation {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typing 3s steps(40, end) forwards;
+        }
+    </style>
+
+    <div class="flex h-screen pt-20">
         <!-- Sidebar -->
-        <div class="w-64 bg-gradient-to-r from-indigo-900 to-purple-700 text-white flex flex-col p-4 transition-transform transform md:translate-x-0 -translate-x-full md:block fixed md:relative z-50" id="sidebar">
+        <div class="w-64 bg-gradient-to-r from-indigo-900 to-purple-700 text-white flex flex-col p-4 transition-transform transform md:translate-x-0 -translate-x-full md:block fixed md:relative z-30" id="sidebar" style="height: calc(100vh - 5rem); overflow-y: auto;">
             <div class="flex items-center justify-between mb-6">
                 <h4 class="text-2xl font-extrabold">Insurance Dashboard</h4>
                 <button class="md:hidden text-white focus:outline-none" onclick="toggleSidebar()">
@@ -17,6 +63,7 @@
                 </button>
             </div>
             <hr class="mb-4 border-purple-300">
+            <!-- Sidebar Links -->
             <ul class="space-y-4">
                 <li><a href="/clients" class="block px-4 py-3 rounded-lg hover:bg-purple-500 transition duration-200">Clients</a></li>
                 <li><a href="/policies" class="block px-4 py-3 rounded-lg hover:bg-purple-500 transition duration-200">Policies</a></li>
@@ -30,15 +77,39 @@
         </div>
         
         <!-- Main Content -->
-        <div class="flex-1 p-6 bg-gray-100 overflow-auto">
-            <button class="md:hidden fixed top-4 left-4 bg-purple-700 text-white p-2 rounded-lg z-50" onclick="toggleSidebar()">☰</button>
-            {% block content %}
-            <!-- Your index page specific content here -->
-            <div class="container">
-                <h1 class="text-3xl font-bold mb-4">Welcome to Insurance Dashboard</h1>
-                <!-- Add your dashboard content here -->
+        <div class="flex-1 p-6 bg-white overflow-auto text-gray-800">
+            <button class="md:hidden fixed top-24 left-4 bg-purple-700 text-white p-2 rounded-lg z-50" onclick="toggleSidebar()">☰</button>
+            
+            <!-- Homepage Content -->
+            <div id="homepage-container">
+                {% block content %}
+                <!-- Default content can go here -->
+                {% endblock %}
             </div>
-            {% endblock %}
+
+            <!-- Table Content -->
+            <div id="table-container" class="hidden">
+                <!-- Your table content goes here -->
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 text-gray-700 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 text-gray-700 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 text-gray-700 uppercase tracking-wider">Policy</th>
+                            <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 text-gray-700 uppercase tracking-wider">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="hover:bg-gray-100">
+                            <td class="px-6 py-4 border-b border-gray-300">1</td>
+                            <td class="px-6 py-4 border-b border-gray-300">John Doe</td>
+                            <td class="px-6 py-4 border-b border-gray-300">Health Insurance</td>
+                            <td class="px-6 py-4 border-b border-gray-300">Active</td>
+                        </tr>
+                        <!-- Add more rows as needed -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -47,6 +118,27 @@
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('-translate-x-full');
         }
+
+        // Function to toggle between homepage and table
+        function showTable() {
+            document.getElementById('homepage-container').classList.add('hidden');
+            document.getElementById('table-container').classList.remove('hidden');
+        }
+
+        function showHomepage() {
+            document.getElementById('homepage-container').classList.remove('hidden');
+            document.getElementById('table-container').classList.add('hidden');
+        }
+
+        // Example: Call showTable() when a table item is clicked
+        document.querySelectorAll('.table-row').forEach(row => {
+            row.addEventListener('click', () => {
+                showTable();
+            });
+        });
+
+        // Ensure homepage is displayed by default
+        showHomepage();
     </script>
 </body>
 </html>

@@ -1,9 +1,17 @@
 {% extends "index.html" %}
 {% block content %}
+<!-- Include jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Include SheetJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+
 <div class="bg-gradient-to-br from-purple-600 to-indigo-800 text-white rounded-lg shadow-lg p-8">
     <h2 class="text-4xl font-extrabold mb-6 text-center tracking-wide">Clients List</h2>
     <div class="flex justify-end mb-4">
-        <button onclick="openModal('addClientModal')" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition">+ Add Client</button>
+        <button onclick="generatePDF()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition">Generate PDF</button>
+        <button onclick="generateExcel()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition ml-2">Generate Excel</button>
+        <button onclick="openModal('addClientModal')" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition ml-2">+ Add Client</button>
     </div>
     <div class="overflow-x-auto">
         <table class="min-w-full border border-white rounded-lg overflow-hidden shadow-lg">
@@ -74,14 +82,17 @@
 </div>
 
 <script>
+    // Function to open a modal
     function openModal(id) {
         document.getElementById(id).classList.remove('hidden');
     }
 
+    // Function to close a modal
     function closeModal(id) {
         document.getElementById(id).classList.add('hidden');
     }
 
+    // Function to open the edit modal and populate fields
     function openEditModal(id, name, email, phone, address) {
         document.getElementById('editClientId').value = id;
         document.getElementById('editClientName').value = name;
@@ -92,12 +103,58 @@
         openModal('editClientModal');
     }
 
-    // Add this function to handle form submissions
-    function submitDelete(event, formId) {
-        event.preventDefault();
-        if (confirm('Are you sure you want to delete this item?')) {
-            document.getElementById(formId).submit();
-        }
+    // Function to generate a PDF from the table
+    function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Add title
+        doc.setFontSize(18);
+        doc.text("Clients List", 10, 10);
+
+        // Extract table data
+        const table = document.querySelector("table");
+        const rows = table.querySelectorAll("tr");
+        let data = [];
+
+        rows.forEach((row, index) => {
+            const cols = row.querySelectorAll("td, th");
+            const rowData = Array.from(cols).map(col => col.innerText);
+            data.push(rowData);
+        });
+
+        // Convert table data to PDF
+        doc.autoTable({
+            head: [data[0]], // Table header
+            body: data.slice(1), // Table body
+            startY: 20, // Start position
+        });
+
+        // Save the PDF
+        doc.save("clients_list.pdf");
+    }
+
+    // Function to generate an Excel file from the table
+    function generateExcel() {
+        const table = document.querySelector("table");
+        const rows = table.querySelectorAll("tr");
+        let data = [];
+
+        rows.forEach((row) => {
+            const cols = row.querySelectorAll("td, th");
+            const rowData = Array.from(cols).map(col => col.innerText);
+            data.push(rowData);
+        });
+
+        // Create a worksheet
+        const ws = XLSX.utils.aoa_to_sheet(data);
+
+        // Create a workbook
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Clients List");
+
+        // Save the Excel file
+        XLSX.writeFile(wb, "clients_list.xlsx");
     }
 </script>
 {% endblock %}

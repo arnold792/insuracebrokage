@@ -96,76 +96,76 @@
 </div>
 
 <script>
-    // Open Add Modal
-    function openAddModal() {
-        document.getElementById('modal-title').textContent = 'Add Payment';
-        document.getElementById('payment-form').reset();
-        document.getElementById('payment-id').value = '';
-        document.getElementById('payment-modal').classList.remove('hidden');
-    }
+// Open Add Modal
+function openAddModal() {
+    document.getElementById('modal-title').textContent = 'Add Payment';
+    document.getElementById('payment-form').reset();
+    document.getElementById('payment-id').value = '';
+    document.getElementById('payment-modal').classList.remove('hidden');
+}
 
-    // Open Edit Modal
-    function openEditModal(id, amount, payment_date, payment_method, status) {
-        document.getElementById('modal-title').textContent = 'Edit Payment';
-        document.getElementById('payment-id').value = id;
-        document.getElementById('amount').value = amount;
-        document.getElementById('payment_date').value = payment_date;
-        document.getElementById('payment_method').value = payment_method;
-        document.getElementById('status').value = status;
-        document.getElementById('payment-modal').classList.remove('hidden');
-    }
+// Open Edit Modal
+function openEditModal(id, amount, payment_date, payment_method, status) {
+    document.getElementById('modal-title').textContent = 'Edit Payment';
+    document.getElementById('payment-id').value = id;
+    document.getElementById('amount').value = amount;
+    document.getElementById('payment_date').value = payment_date;
+    document.getElementById('payment_method').value = payment_method;
+    document.getElementById('status').value = status;
+    document.getElementById('payment-modal').classList.remove('hidden');
+}
 
-    // Close Modal
-    function closeModal() {
-        document.getElementById('payment-modal').classList.add('hidden');
-    }
+// Close Modal
+function closeModal() {
+    document.getElementById('payment-modal').classList.add('hidden');
+}
 
-    // Handle Form Submission (Add/Edit)
-    function handleFormSubmit(event) {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        const paymentId = document.getElementById('payment-id').value;
-        const data = {
-            client_id: formData.get('client_id'),
-            amount: formData.get('amount'),
-            payment_date: formData.get('payment_date'),
-            payment_method: formData.get('payment_method'),
-            status: formData.get('status')
-        };
+// Handle Form Submission (Add/Edit)
+function handleFormSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const paymentId = document.getElementById('payment-id').value;
+    const data = {
+        client_id: formData.get('client_id'),
+        amount: formData.get('amount'),
+        payment_date: formData.get('payment_date'),
+        payment_method: formData.get('payment_method'),
+        status: formData.get('status')
+    };
 
-        const url = paymentId ? `/payments/${paymentId}` : '/add_payment';
-        const method = paymentId ? 'PUT' : 'POST';
+    const url = paymentId ? `/payments/${paymentId}` : '/add_payment';
+    const method = paymentId ? 'PUT' : 'POST';
 
-        fetch(url, {
-            method: method,
-            body: JSON.stringify(data),
-            headers: {
-                'Content-Type': 'application/json',
-            },
+    fetch(url, {
+        method: method,
+        body: JSON.stringify(data),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Reload the page to reflect changes
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Delete Payment
+function deletePayment(id) {
+    if (confirm('Are you sure you want to delete this payment?')) {
+        fetch(`/payments/${id}`, {
+            method: 'DELETE',
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload(); // Reload the page to reflect changes
+                document.getElementById(`payment-${id}`).remove(); // Remove the row from the table
             }
         })
         .catch(error => console.error('Error:', error));
     }
-
-    // Delete Payment
-    function deletePayment(id) {
-        if (confirm('Are you sure you want to delete this payment?')) {
-            fetch(`/delete_payment/${id}`, {
-                method: 'DELETE',
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById(`payment-${id}`).remove(); // Remove the row from the table
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    }
+}
 </script>
 {% endblock %}
